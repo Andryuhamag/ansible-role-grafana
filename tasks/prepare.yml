@@ -1,0 +1,11 @@
+---
+- name: "Add Grafana gpg key"
+  ansible.builtin.apt_key:
+    url: "{{ grafana_gpg_key }}"
+    state: present
+
+- name: "Add Grafana repo"
+  ansible.builtin.apt_repository:
+    repo: "{{ grafana_repo }}"
+    state: present
+

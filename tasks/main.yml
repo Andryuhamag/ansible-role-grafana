@@ -1,0 +1,38 @@
+---
+- name: "Download Grafana package"
+  ansible.builtin.get_url:
+    url: "{{ grafana_url }}"
+    dest: "/tmp/{{ grafana_package }}"
+    mode: 0644
+    checksum: "sha256:{{ grafana_sha256 }}"
+  retries: 5
+  delay: 2
+  delegate_to: localhost
+
+- name: "Copy package to server"
+  ansible.builtin.copy:
+    src: "/tmp/{{ grafana_package }}"
+    dest: "/tmp/{{ grafana_package }}"
+    mode: 0644
+    owner: root
+    group: root
+
+- name: "Install Grafana from package"
+  ansible.builtin.apt:
+    deb: "/tmp/{{ grafana_package }}"
+
+- name: "Add data source Prometheus"
+  ansible.builtin.template:
+    src: "prometheus.yml.j2"
+    dest: "/etc/grafana/provisioning/datasources/prometheus.yml"
+    mode: 0644
+    owner: grafana
+    group: grafana
+  notify: "restart grafana"
+
+
+- name: "Start and enable grafana-server.service"
+  ansible.builtin.service:
+    name: grafana-server
+    state: started
+    enabled: true
